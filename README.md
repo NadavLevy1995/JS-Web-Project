@@ -8,7 +8,7 @@ The app is optimized for live synchronization, automatic session management, rol
 
 # 🌐 Live Deployment
 
-- **Frontend:**  *(coming soon)***************************************
+- **Frontend:**  https://js-web-practice-69d4.vercel.app/
 - **Backend:** Hosted on Railway  
 - **API Base URL:** https://js-web-practice-production.up.railway.app  
 - **WebSocket Endpoint:** https://js-web-practice-production.up.railway.app/socket.io
