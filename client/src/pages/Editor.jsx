@@ -102,6 +102,8 @@ function Editor() {
   const isCorrect =
   code != null &&
   referenceCode != null &&
+  code.trim() !== "" &&
+  referenceCode.trim() !== "" &&
   removeComments(code) === removeComments(referenceCode);
 
   return (
