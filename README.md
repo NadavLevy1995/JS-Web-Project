@@ -11,7 +11,7 @@ The app is optimized for live synchronization, automatic session management, rol
 - **Frontend:**  https://js-web-project.vercel.app/
 - **Backend:** Hosted on Railway  
 - **API Base URL:** https://js-web-project-production.up.railway.app  
-- **WebSocket Endpoint:** https://js-web-practice-production.up.railway.app/socket.io
+- **WebSocket Endpoint:** https://js-web-project-production.up.railway.app/socket.io
 
 
 # 🧩 Features
