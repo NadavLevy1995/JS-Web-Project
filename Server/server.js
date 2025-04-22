@@ -11,8 +11,6 @@ const path = require("path");
 const Room = require("./db/models/Room");
 const connectToDatabase = require("./db/connection");
 
-
-
 // Load environment variables from .env
 dotenv.config();
 
