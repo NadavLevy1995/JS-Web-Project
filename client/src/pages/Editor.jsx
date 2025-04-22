@@ -99,7 +99,10 @@ function Editor() {
     socketRef.current.emit("code_change", { roomId, content: newCode });
   };
 
-  const isCorrect = removeComments(code) === removeComments(referenceCode);
+  const isCorrect =
+  code != null &&
+  referenceCode != null &&
+  removeComments(code) === removeComments(referenceCode);
 
   return (
     <div
