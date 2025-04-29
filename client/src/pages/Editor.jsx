@@ -4,7 +4,6 @@ import { io } from "socket.io-client";
 import BaseCodeViewer from "../components/BaseCodeViewer";
 
 
-// Format the roomId into a displayable title
 function formatTitle(slug) {
   return slug
     .split("-")
@@ -12,7 +11,6 @@ function formatTitle(slug) {
     .join(" ");
 }
 
-// Remove comments and whitespace for comparison
 function removeComments(code) {
   if (!code) {
     return "";
@@ -44,11 +42,11 @@ function Editor() {
     socketRef.current = io(SERVER_URL);
     const socket = socketRef.current;
   
-    // On successful connection, store socket ID
     socket.on("connect", () => {
       setSocketId(socket.id);
     });
-  
+        
+    console.log("room ID is:" , roomId)
     // Join a specific room with user name
     socket.emit("join_room", { roomId, user });
   

@@ -11,17 +11,14 @@ const path = require("path");
 const Room = require("./db/models/Room");
 const connectToDatabase = require("./db/connection");
 
-// Load environment variables from .env
 dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
 
-// ⚙️ Enable CORS for client requests
 app.use(cors());
 app.use(express.json());
 
-// Connect to MongoDB
 connectToDatabase();
 
 // Setup Socket.IO server with CORS config
@@ -47,7 +44,7 @@ const socketRooms = {};
 const roomCache = {};
 
 
-// ✅ Add default status route from index.js
+
 app.get("/", (req, res) => {
   res.json({ message: "✅ Server is up and running!" });
 });
@@ -61,7 +58,6 @@ app.get("/active-room", (req, res) => {
   return res.json({ activeRoom: null });
 });
 
-// Handle new socket connections
 io.on("connection", (socket) => {
   console.log(`🔌 User connected: ${socket.id}`);
 
@@ -111,17 +107,6 @@ io.on("connection", (socket) => {
       socket.emit("error", "Server error");
     }
   });
-  // Update the edited code
-
-
- {/* socket.on("code_change", ({ roomId, content }) => {
-     if (roomCache[roomId]) {
-       roomCache[roomId].content = content;
-       roomCache[roomId].lastUpdated = new Date();
-     }
-
-     socket.to(roomId).emit("code_update", content); */
-    }
 
     socket.on("code_change", ({ roomId, content }) => {
       const room = roomCache[roomId];
