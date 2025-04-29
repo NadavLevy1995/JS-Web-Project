@@ -93,6 +93,7 @@ io.on("connection", (socket) => {
         io.emit("room_opened", roomId);
       }
 
+      
       roomCache[roomId].usersCount += 1;
       // Updates the Students Count
       io.to(roomId).emit("update_user_count", roomCache[roomId].usersCount);
