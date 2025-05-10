@@ -33,6 +33,7 @@ function Editor() {
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [socketId, setSocketId] = useState(null);
   const [ownerId, setOwnerId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const user = "Participant";
   const isMobile = window.innerWidth < 600;
   const SERVER_URL = import.meta.env.VITE_SERVER_URL;
@@ -55,6 +56,7 @@ function Editor() {
       setCode(content);
       setDescription(description);
       setReferenceCode(referenceCode);
+      setIsLoading(false);
   
       if (usersCount != null) {
         setUsersCount(usersCount);
@@ -104,6 +106,24 @@ function Editor() {
   referenceCode.trim() !== "" &&
   removeComments(code) === removeComments(referenceCode);
 
+
+  if (isLoading) {
+    return (
+      <div
+        style={{
+          color: "white",
+          textAlign: "center",
+          paddingTop: "5rem",
+        }}
+      >
+        <div className="spinner"></div>
+        <div style={{ marginTop: "1rem", fontSize: "1.2rem" }}>
+          Loading...
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div
       style={{
