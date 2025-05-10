@@ -112,7 +112,6 @@ io.on("connection", (socket) => {
       const room = roomCache[roomId];
       if (!room) return;
     
-      // 🛡️ Avoid redundant updates
       if (room.content !== content) {
         room.content = content;
         room.lastUpdated = new Date();
