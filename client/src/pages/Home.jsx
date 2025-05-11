@@ -87,9 +87,9 @@ function Home() {
 
     setShowPasswordModal(false);
     navigate(`/editor/${currentRoom}`, {
-      state: { userName: userName } 
+      state: { userName: userName, password: passwordInput }
     });
-  };
+      };
   
   
   

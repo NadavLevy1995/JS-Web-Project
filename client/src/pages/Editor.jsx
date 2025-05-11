@@ -29,7 +29,7 @@ function Editor() {
   const navigate = useNavigate();
   const socketRef = useRef(null);
   const [code, setCode] = useState("");
-  const password = localStorage.getItem("roomPassword");
+  const password = location.state?.password || localStorage.getItem("roomPassword") || null;
   const raiseTimeoutRef = useRef(null);
   const [description, setDescription] = useState("");
   const [raisedUser, setRaisedUser] = useState(null);
