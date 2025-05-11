@@ -31,7 +31,7 @@ function Home() {
   .then((data) => {
     setActiveRoom({
       roomId: data.activeRoom,
-      password: data.password
+      password: data.password || null
     });
   })
   .catch((err) => console.error("Fetch error:", err));
@@ -46,7 +46,7 @@ function Home() {
 
     socket.on("room_opened", ({ roomId, password }) => {
       console.log("📥 Received room_opened:", roomId);
-      setActiveRoom({ roomId, password: password });
+      setActiveRoom({ roomId, password: password || null });
     });
     
     socket.on("room_closed", () => {
