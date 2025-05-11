@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate ,useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
+import PasswordModal from "../components/PasswordModal";
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
@@ -13,18 +14,27 @@ const tasks = [
 
 function Home() {
   const location = useLocation();
-  const [activeRoom, setActiveRoom] = useState(null);
+  const [userName, setUserName] = useState("");
+  const [activeRoom, setActiveRoom] = useState({ roomId: null, password: null });
   const navigate = useNavigate();
   const socketRef = useRef(null); // Used to store the socket instance
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [currentRoom, setCurrentRoom] = useState(null);
 
   useEffect(() => {
     console.log("🏠 Home mounted");
 
     // Fetch initial room status
     fetch(`${SERVER_URL}/active-room`)
-      .then((res) => res.json())
-      .then((data) => setActiveRoom(data.activeRoom))
-      .catch((err) => console.error("Fetch error:", err));
+  .then((res) => res.json())
+  .then((data) => {
+    setActiveRoom({
+      roomId: data.activeRoom,
+      password: data.password || null
+    });
+  })
+  .catch((err) => console.error("Fetch error:", err));
 
     // Create socket connection
     const socket = io(SERVER_URL);
@@ -34,14 +44,14 @@ function Home() {
       console.log("✅ Connected to server (Home)");
     });
 
-    socket.on("room_opened", (roomId) => {
+    socket.on("room_opened", ({ roomId, password }) => {
       console.log("📥 Received room_opened:", roomId);
-      setActiveRoom(roomId);
+      setActiveRoom({ roomId, password: password || null });
     });
-
+    
     socket.on("room_closed", () => {
       console.log("📥 Received room_closed");
-      setActiveRoom(null);
+      setActiveRoom({roomId: null, password: null});
     });
 
     return () => {
@@ -51,8 +61,38 @@ function Home() {
   }, [location.pathname]);
 
   const handleClick = (roomId) => {
-    navigate(`/editor/${roomId}`);
+    setCurrentRoom(roomId);
+    setPasswordInput("");
+    setShowPasswordModal(true);
   };
+
+
+  const handlePasswordSubmit = () => {
+    if (!passwordInput) {
+      alert("Password is required.");
+      return;
+    }
+  
+    const isRoomOpen = activeRoom.roomId === currentRoom;
+  
+    if (isRoomOpen) {
+      if (passwordInput !== activeRoom.password) {
+        alert("Incorrect password.");
+        return;
+      }
+    }
+  
+    localStorage.setItem("roomPassword", passwordInput);
+    //localStorage.setItem("userName", userName);
+
+    setShowPasswordModal(false);
+    navigate(`/editor/${currentRoom}`, {
+      state: { userName: userName } 
+    });
+  };
+  
+  
+  
 
   return (
     <div style={{ padding: "2rem", color: "white" }}>
@@ -67,7 +107,7 @@ function Home() {
         }}
       >
         {tasks.map((task) => {
-          const isActive = !activeRoom || activeRoom === task.title;
+          const isActive = !activeRoom.roomId || activeRoom.roomId === task.title;
 
           return (
             <button
@@ -90,9 +130,20 @@ function Home() {
             </button>
           );
         })}
+        <PasswordModal
+  isOpen={showPasswordModal}
+  onClose={() => setShowPasswordModal(false)}
+  onSubmit={handlePasswordSubmit}
+  password={passwordInput}
+  setPassword={setPasswordInput}
+  isRoomOpen={activeRoom.roomId === currentRoom}
+  roomId={currentRoom}
+  userName={userName}
+  setUserName={setUserName}
+/>
+
       </div>
     </div>
   );
 }
-
 export default Home;

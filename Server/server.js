@@ -10,6 +10,7 @@ const dotenv = require("dotenv");
 const path = require("path");
 const Room = require("./db/models/Room");
 const connectToDatabase = require("./db/connection");
+const socketUsers = {};
 
 dotenv.config();
 
@@ -52,30 +53,30 @@ app.get("/", (req, res) => {
 app.get("/active-room", (req, res) => {
   for (const roomId in roomCache) {
     if (roomCache[roomId].usersCount > 0) {
-      return res.json({ activeRoom: roomId });
+      return res.json({
+        activeRoom: roomId,
+        password: roomCache[roomId].password || null
+      });
     }
   }
-  return res.json({ activeRoom: null });
+  return res.json({ activeRoom: null, password: null });
 });
 
 io.on("connection", (socket) => {
   console.log(`🔌 User connected: ${socket.id}`);
 
-  // Join room and initialize if needed
-  socket.on("join_room", async ({ roomId, user }) => {
-    try {
-      socket.join(roomId);
-      socketRooms[socket.id] = roomId;
-      console.log(`${user} joined room ${roomId}`);
+  socket.on("join_room", async ({ roomId, user, password }, callback) => {
 
-      // Initialize room in cache if not already present
+    try {
+      socketRooms[socket.id] = roomId;
+      // If room is not in cache yet – load it from DB and initialize
       if (!roomCache[roomId]) {
         const roomFromDB = await Room.findOne({ title: roomId });
         if (!roomFromDB) {
           socket.emit("error", "Room not found");
           return;
         }
-
+  
         roomCache[roomId] = {
           description: roomFromDB.description,
           content: roomFromDB.baseCode,
@@ -84,16 +85,22 @@ io.on("connection", (socket) => {
           lastUpdated: null,
           locked: false,
           ownerId: socket.id,
-          participants: []
+          participants: [],
+          password: password || null // 🔐 Save password if provided by owner
         };
-        io.emit("room_opened", roomId);
+  
+        io.emit("room_opened", {roomId, password});
       }
-
+  
+      // Increment user count and notify clients in the room
+      socket.join(roomId);
+      socketUsers[socket.id] = user;
+      console.log(`${user} joined room ${roomId}`);
       roomCache[roomId].usersCount += 1;
-      // Updates the Students Count
       io.to(roomId).emit("update_user_count", roomCache[roomId].usersCount);
       console.log(`👥 Room "${roomId}" now has ${roomCache[roomId].usersCount} user(s)`);
-
+      
+      // Send initial room data to the user
       socket.emit("load_code", {
         content: roomCache[roomId].content,
         description: roomCache[roomId].description,
@@ -102,12 +109,19 @@ io.on("connection", (socket) => {
         ownerId: roomCache[roomId].ownerId,
         participants: roomCache[roomId].participants
       });
+  
     } catch (err) {
       console.error("❌ Error in join_room:", err.message);
-      socket.emit("error", "Server error");
+      socket.emit("error", "Server error");      
     }
   });
 
+  socket.on("raise_hand", ({ roomId, user }) => {
+    const userName = socketUsers[socket.id] || "Participant";
+  io.to(roomId).emit("hand_raised", userName);
+  });
+  
+  
     socket.on("code_change", ({ roomId, content }) => {
       const room = roomCache[roomId];
       if (!room) return;
@@ -124,6 +138,7 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log(`❌ User disconnected: ${socket.id}`);
     const roomId = socketRooms[socket.id];
+    delete socketUsers[socket.id];
 
     if (!roomId || !roomCache[roomId]) {
       return;
@@ -159,7 +174,8 @@ io.on("connection", (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
+//const PORT =  5000;
+const PORT = process.env.PORT || 5000; // To run on railway
 server.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
 });

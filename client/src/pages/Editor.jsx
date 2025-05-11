@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate,useLocation  } from "react-router-dom";
 import { io } from "socket.io-client";
 import BaseCodeViewer from "../components/BaseCodeViewer";
+import RaiseHandNotification from "../components/RaiseHandNotification";
 
 
 function formatTitle(slug) {
@@ -24,21 +25,27 @@ function removeComments(code) {
 
 function Editor() {
   const { roomId } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const socketRef = useRef(null);
   const [code, setCode] = useState("");
+  const password = localStorage.getItem("roomPassword");
+  const raiseTimeoutRef = useRef(null);
   const [description, setDescription] = useState("");
+  const [raisedUser, setRaisedUser] = useState(null);
   const [referenceCode, setReferenceCode] = useState("");
   const [usersCount, setUsersCount] = useState(1);
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [socketId, setSocketId] = useState(null);
   const [ownerId, setOwnerId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const user = "Participant";
+  const user = location.state?.userName || "Participant";
   const isMobile = window.innerWidth < 600;
   const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
+  
   useEffect(() => {
+
     // Initialize socket connection
     socketRef.current = io(SERVER_URL);
     const socket = socketRef.current;
@@ -49,15 +56,35 @@ function Editor() {
         
     console.log("room ID is:" , roomId)
     // Join a specific room with user name
-    socket.emit("join_room", { roomId, user });
-  
+
+    socket.emit("join_room", {
+      roomId,
+      user,
+      password
+    });
+    
+    socket.on("hand_raised", (userHand) => {
+      setRaisedUser(userHand);
+    
+      if (raiseTimeoutRef.current) {
+        clearTimeout(raiseTimeoutRef.current);
+      }
+    
+      raiseTimeoutRef.current = setTimeout(() => {
+        setRaisedUser(null);
+        raiseTimeoutRef.current = null;
+      }, 8000);
+    });
+      
+
     // Load initial room state (sent by server on join)
     socket.on("load_code", ({ content, description, referenceCode, usersCount, ownerId }) => {
       setCode(content);
       setDescription(description);
       setReferenceCode(referenceCode);
       setIsLoading(false);
-  
+      localStorage.removeItem("roomPassword");
+
       if (usersCount != null) {
         setUsersCount(usersCount);
       }
@@ -83,6 +110,7 @@ function Editor() {
   
     // Cleanup on unmount – disconnect from socket
     return () => {
+      //socket.off("hand_raised")
       socket.disconnect();
     };
   }, [roomId, user, navigate]);
@@ -150,11 +178,34 @@ function Editor() {
       >
         {/* Participants count */}
         <div style={{ color: "#ccc", fontSize: "clamp(1rem, 1.5vw, 1.2rem)", textAlign: "center" }}>
+        <RaiseHandNotification user={raisedUser} />
           <p style={{ margin: 0 }}>Participants</p>
           <p style={{ fontWeight: "bold", margin: 0 }}>
             {typeof usersCount === "number" ? usersCount - 1 : "-"}
           </p>
         </div>
+
+        <button
+  onClick={() => {
+    socketRef.current.emit("raise_hand", { roomId, user });
+  }}
+  
+  style={{
+    marginTop: "1rem",
+    padding: "0.5rem 1rem",
+    backgroundColor: "#ffc107",
+    border: "none",
+    borderRadius: "6px",
+    fontSize: "1rem",
+    cursor: "pointer"
+  }}
+>
+  ✋ Raise Hand
+</button>
+
+
+
+
 
         {/* Role indicator */}
         <div
