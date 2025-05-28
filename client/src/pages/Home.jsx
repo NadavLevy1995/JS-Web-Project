@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate ,useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
+import TaskButton from "../components/TaskButton"
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
@@ -12,7 +13,7 @@ const tasks = [
 ];
 
 function Home() {
-  const location = useLocation();
+  // const location = useLocation();
   const [activeRoom, setActiveRoom] = useState(null);
   const navigate = useNavigate();
   const socketRef = useRef(null); // Used to store the socket instance
@@ -20,13 +21,13 @@ function Home() {
   useEffect(() => {
     console.log("🏠 Home mounted");
 
-    // Fetch initial room status
+
     fetch(`${SERVER_URL}/active-room`)
       .then((res) => res.json())
       .then((data) => setActiveRoom(data.activeRoom))
       .catch((err) => console.error("Fetch error:", err));
 
-    // Create socket connection
+    
     const socket = io(SERVER_URL);
     socketRef.current = socket;
 
@@ -48,7 +49,9 @@ function Home() {
       socket.disconnect();
       console.log("❌ Socket disconnected (Home)");
     };
-  }, [location.pathname]);
+  }, [
+    //location.pathname
+  ]);
 
   const handleClick = (roomId) => {
     navigate(`/editor/${roomId}`);
@@ -66,33 +69,18 @@ function Home() {
           margin: "2rem auto"
         }}
       >
-        {tasks.map((task) => {
-          const isActive = !activeRoom || activeRoom === task.title;
-
-          return (
-            <button
-              key={task.title}
-              onClick={() => handleClick(task.title)}
-              disabled={!isActive}
-              style={{
-                padding: "1rem",
-                borderRadius: "8px",
-                fontSize: "1.1rem",
-                backgroundColor: isActive ? "#007bff" : "#555",
-                color: "white",
-                border: "none",
-                cursor: isActive ? "pointer" : "not-allowed",
-                opacity: isActive ? 1 : 0.5,
-                transition: "all 0.2s ease-in-out"
-              }}
-            >
-              {task.label}
-            </button>
-          );
-        })}
+        {tasks.map((task) => (
+          <TaskButton
+            key={task.title}
+            task={task}
+            activeRoomId={activeRoom}
+            onClick={handleClick}
+          />
+        ))}
       </div>
     </div>
   );
 }
+
 
 export default Home;

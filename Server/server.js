@@ -1,7 +1,5 @@
 // server.js
 
-// 🌐 Express server with Socket.IO and MongoDB support
-
 const express = require("express");
 const http = require("http");
 const cors = require("cors");
@@ -30,7 +28,6 @@ const io = new Server(server, {
 });
 
 
-// Global error handling for safety in production
 process.on("uncaughtException", (err) => {
   console.error("💥 Uncaught Exception:", err);
 });
@@ -39,7 +36,7 @@ process.on("unhandledRejection", (reason) => {
   console.error("💥 Unhandled Rejection:", reason);
 });
 
-// In-memory room cache & socket-room tracking
+
 const socketRooms = {};
 const roomCache = {};
 
@@ -61,8 +58,7 @@ app.get("/active-room", (req, res) => {
 io.on("connection", (socket) => {
   console.log(`🔌 User connected: ${socket.id}`);
 
-  // Join room and initialize if needed
-  socket.on("join_room", async ({ roomId, user }) => {
+    socket.on("join_room", async ({ roomId, user }) => {
     try {
       socket.join(roomId);
       socketRooms[socket.id] = roomId;
@@ -90,7 +86,6 @@ io.on("connection", (socket) => {
       }
 
       roomCache[roomId].usersCount += 1;
-      // Updates the Students Count
       io.to(roomId).emit("update_user_count", roomCache[roomId].usersCount);
       console.log(`👥 Room "${roomId}" now has ${roomCache[roomId].usersCount} user(s)`);
 
@@ -120,7 +115,6 @@ io.on("connection", (socket) => {
 
     });
     
-  // Handle disconnection
   socket.on("disconnect", () => {
     console.log(`❌ User disconnected: ${socket.id}`);
     const roomId = socketRooms[socket.id];
