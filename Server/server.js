@@ -60,6 +60,7 @@ app.get("/active-room", (req, res) => {
 
 io.on("connection", (socket) => {
   console.log(`🔌 User connected: ${socket.id}`);
+  
 
   // Join room and initialize if needed
   socket.on("join_room", async ({ roomId, user }) => {
