@@ -2,6 +2,11 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import BaseCodeViewer from "../components/BaseCodeViewer";
+import ParticipantsHeader from "../components/ParticipantsHeader";
+import RoomHeader from "../components/RoomHeader";
+import CodeEditor from "../components/CodeEditor";
+import SolutionViewer from "../components/SolutionViewer";
+import SmileyOverlay from "../components/SmileyOverlay";
 
 
 function formatTitle(slug) {
@@ -136,140 +141,12 @@ function Editor() {
         boxSizing: "border-box",
       }}
     >
-      {/* 👥 Participants + 🧑‍🏫 Role in one flexible container */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: isMobile ? "column" : "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          width: "90%",
-          maxWidth: "900px",
-          margin: "0 auto 1.5rem",
-          gap: "1rem",
-        }}
-      >
-        {/* Participants count */}
-        <div style={{ color: "#ccc", fontSize: "clamp(1rem, 1.5vw, 1.2rem)", textAlign: "center" }}>
-          <p style={{ margin: 0 }}>Participants</p>
-          <p style={{ fontWeight: "bold", margin: 0 }}>
-            {typeof usersCount === "number" ? usersCount - 1 : "-"}
-          </p>
-        </div>
-
-        {/* Role indicator */}
-        <div
-          style={{
-            backgroundColor: "#333",
-            color: "#fff",
-            padding: "0.5rem 1rem",
-            borderRadius: "10px",
-            fontWeight: "bold",
-            fontSize: "clamp(1rem, 1.5vw, 1.2rem)",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {isReadOnly ? "TOM" : "Student"}
-        </div>
-      </div>
-
-      {/* 🧾 Title and description */}
-      <h2 style={{ fontSize: "clamp(1rem, 3vw, 1.2rem)" }}>{formatTitle(roomId)}</h2>
-
-      <p
-        style={{
-          maxWidth: "90%",
-          margin: "1rem auto",
-          color: "#ccc",
-          fontSize: "clamp(1rem, 2vw, 1.1rem)",
-        }}
-      >
-        {description}
-      </p>
-
-      {/* 🧩 BaseCode read-only viewer */}
-    {code && (
-      <>
-        <BaseCodeViewer code={code} />
-      </>
-    )}
-    
-    {/* ✍️ Code Editor */}
-    <div
-      style={{
-        border: "2px solid #ccc",
-        borderRadius: "8px",
-        padding: "1rem",
-        marginTop: "2rem",
-        backgroundColor: "#1e1e1e",
-        width: "90%",
-        maxWidth: "900px",
-        marginInline: "auto",
-      }}
-    >
-
-<textarea
-    value={code}
-    onChange={isReadOnly ? undefined : (e) => handleChange(e.target.value)}
-    readOnly={isReadOnly}
-    style={{
-      width: "100%",
-      height: "20vh",
-      backgroundColor: "#1e1e1e",
-      color: "white",
-      fontSize: "16px",
-      fontFamily: "monospace",
-      border: "none",
-      resize: "none",
-      outline: "none",
-      whiteSpace: "pre",
-      overflowWrap: "normal",
-      overflowX: "auto",
-      
-    }}
-  />
-    </div>
-    {isCorrect && (
-  <div
-    style={{
-      position: "fixed",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      fontSize: "8rem",
-      zIndex: 9999,
-      pointerEvents: "none",
-      userSelect: "none",
-    }}
-  >
-    😄
-  </div>
-)}
-
-
-    {/* 🧠 Show solution to mentor (read-only user) */}
-    {isReadOnly && (
-      <div
-        style={{
-          marginTop: "1rem",
-          backgroundColor: "#2b2b2b",
-          padding: "1rem",
-          borderRadius: "8px",
-          color: "#aaffaa",
-          fontFamily: "monospace",
-          whiteSpace: "pre-wrap",
-          width: "90%",
-          maxWidth: "900px",
-          marginInline: "auto",
-          textAlign: "left",
-        }}
-      >
-        <strong>Solution:</strong>
-        <pre>{referenceCode}</pre>
-      </div>
-    )}
-    
-    {/* 🛑 Read-only message for first user */}
+    <ParticipantsHeader usersCount={usersCount} isReadOnly={isReadOnly} />
+    <RoomHeader roomId={roomId} description={description} />
+    {code && <BaseCodeViewer code={code} />}
+    <CodeEditor code={code} isReadOnly={isReadOnly} onChange={handleChange} />
+    {isCorrect && <SmileyOverlay />}
+    {isReadOnly && <SolutionViewer referenceCode={referenceCode} />}    
     {isReadOnly && (
       <p
         style={{
