@@ -8,7 +8,7 @@ The app is optimized for live synchronization, automatic session management, rol
 
 # 🌐 Live Deployment
 
-- **Frontend:**  https://js-web-project-git-submission-nadavlevy1995s-projects.vercel.app/
+- **Frontend:**  https://js-web-project.vercel.app/
 - **Backend:** Hosted on Railway  
 - **API Base URL:** https://js-web-project-production.up.railway.app
 - **Development Version (Feature Branch):** https://js-web-project-git-adding-features-nadavlevy1995s-projects.vercel.app/
