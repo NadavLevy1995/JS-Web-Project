@@ -13,7 +13,7 @@ const tasks = [
 ];
 
 function Home() {
-  // const location = useLocation();
+  const location = useLocation();
   const [activeRoom, setActiveRoom] = useState(null);
   const navigate = useNavigate();
   const socketRef = useRef(null); // Used to store the socket instance
@@ -50,7 +50,7 @@ function Home() {
       console.log("❌ Socket disconnected (Home)");
     };
   }, [
-    //location.pathname
+    location.pathname
   ]);
 
   const handleClick = (roomId) => {
