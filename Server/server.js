@@ -59,6 +59,7 @@ io.on("connection", (socket) => {
   console.log(`🔌 User connected: ${socket.id}`);
 
     socket.on("join_room", async ({ roomId, user }) => {
+      console.log("trying to join the room")
     try {
       socket.join(roomId);
       socketRooms[socket.id] = roomId;
