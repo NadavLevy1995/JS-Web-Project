@@ -67,6 +67,7 @@ io.on("connection", (socket) => {
       // Initialize room in cache if not already present
       if (!roomCache[roomId]) {
         const roomFromDB = await Room.findOne({ title: roomId });
+        console.log("something wrong")
         if (!roomFromDB) {
           socket.emit("error", "Room not found");
           return;
